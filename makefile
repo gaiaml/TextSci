@@ -4,7 +4,7 @@ YACC = yacc -d
 CFLAGS = -O2 -Wall -g
 LDFLAGS = -ly -ll # Linux: -lfl / OSX: -ll
 EXEC = texcc
-SRC = src/symbol_array.c
+SRC = src/symbol_array.c src/quad.c
 OBJ = $(SRC:.c=.o)
 
 

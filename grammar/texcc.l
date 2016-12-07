@@ -2,6 +2,7 @@
   #include <stdlib.h>
   #include <string.h>
   #include "include/symbol_array.h"
+  #include "include/quad.h"
   #include "y.tab.h"
 %}
 %option yylineno
@@ -21,10 +22,11 @@ output    "\\Output"
 global    "\\Global"
 local     "\\Local"
 in        "\\in"
+emptyset  "\\emptyset"
 type_int      "\\Integer"
 type_real     "\\Real"
-
-
+commentaire "\\tcc{".*"}"
+affectation   "\\leftarrow"
 id        [a-zA-Z_][a-zA-Z0-9_]*
 symbole       ","|"$"
 %%
@@ -64,10 +66,14 @@ symbole       ","|"$"
                       yylval.variable.scope = SCOPE_LOCAL;
                       return LOCAL_DECLARATION;
                     }
-
+<texsci>{integer}   { yylval.variable.value.int_value = atoi(yytext);
+                      return NUMBER;}
 <texsci>{symbole}   { return yytext[0]; }
 <texsci>{blankline} { return BLANKLINE; }
 <texsci>[{}]        { return yytext[0]; }
+<texsci>{commentaire} {}
+<texsci>{affectation} { return AFFECTATION; }
+
 
 .                   { }
 [\t\n ]             { }
