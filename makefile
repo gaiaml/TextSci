@@ -1,15 +1,16 @@
 CC = gcc
 LEX = lex
 YACC = yacc -d
-CFLAGS = -O2 -Wall -g
+CFLAGS = -O2 -Wall -g -std=gnu99
 LDFLAGS = -ly -ll # Linux: -lfl / OSX: -ll
+C99FLAGS= -std=gnu99
 EXEC = texcc
 SRC = src/symbol_array.c src/quad.c src/gen_code.c
 OBJ = $(SRC:.c=.o)
 
 
 all: $(OBJ) y.tab.c lex.yy.c
-	$(CC) -o bin/$(EXEC) $^ $(LDFLAGS) 
+	$(CC) -o bin/$(EXEC) $^ $(LDFLAGS) $(C99FLAGS)
 
 y.tab.c: grammar/$(EXEC).y
 	$(YACC) grammar/$(EXEC).y 
