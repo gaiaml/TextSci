@@ -26,7 +26,11 @@ typedef struct symbol{
 		char *string_value;
 	}value;
 	union{
-		int size;
+		struct{
+			int size;
+			int index;
+		}array;
+
 	}vector;
 	enum TYPE type;
 	enum SCOPE scope;
