@@ -25,6 +25,9 @@ lex.yy.c: grammar/$(EXEC).l
 clean:
 	/bin/rm $(EXEC) *.o y.tab.c y.tab.h lex.yy.c src/*.o
 
+test: |all
+	bin/texcc examples/01_empty.tex
+
 rebuild:
 	make clean
 	make all
