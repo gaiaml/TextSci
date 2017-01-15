@@ -71,7 +71,7 @@ algorithm_list:
 algorithm:
     TEXSCI_BEGIN '{' ID '}' DECLARATIONS BLANKLINE INSTR TEXSCI_END
     {
-      fprintf(stdout, ".data\n");
+      fprintf(output_file, ".data\n");
       mips_generate_symbol(symbol_table);
       symbol_table->length = 0;
 
@@ -96,47 +96,47 @@ algorithm:
     |
     IF '{' '$' BOOL_EXPR '$' '}' '{' LIST_CODE  '}'
     {
-      fprintf(stdout, "\t#FALSE LIST\n");
-      fprintf(stdout, "\tIF_%d_FALSELIST:\n", $4.listquad->label_id);
+      fprintf(output_file, "\t#FALSE LIST\n");
+      fprintf(output_file, "\tIF_%d_FALSELIST:\n", $4.listquad->label_id);
     }
     |
     EIF '{' '$' BOOL_EXPR '$' '}' '{' LIST_CODE  '}' M_BOOL '{' LIST_CODE '}'
     {
-      fprintf(stdout, "\tIF_%d_END:\n", $4.listquad->label_id);
+      fprintf(output_file, "\tIF_%d_END:\n", $4.listquad->label_id);
     }
     |
     WHILE M_WHILE '{' '$' BOOL_EXPR '$' '}' '{' LIST_CODE '}'
     {
-      fprintf(stdout, "\tj WHILE_%d_BEGIN\n", $5.listquad->label_id);
-      fprintf(stdout, "\tIF_%d_FALSELIST:\n", $5.listquad->label_id);
+      fprintf(output_file, "\tj WHILE_%d_BEGIN\n", $5.listquad->label_id);
+      fprintf(output_file, "\tIF_%d_FALSELIST:\n", $5.listquad->label_id);
     }
     |
     FOR CONDITION_FOR '{' LIST_CODE '}'
     {
       // incremente le compteur
       mips_generate($2.listquad);
-      fprintf(stdout, "\tj WHILE_%d_BEGIN\n", $2.listquad->label_id);
-      fprintf(stdout, "\tIF_%d_FALSELIST:\n", $2.listquad->label_id);
+      fprintf(output_file, "\tj WHILE_%d_BEGIN\n", $2.listquad->label_id);
+      fprintf(output_file, "\tIF_%d_FALSELIST:\n", $2.listquad->label_id);
     }
     ;
     CONDITION_FOR:
     '{' AFFEC KWTO '$' NUMBER '$' '}'
     {
       // on converti le for en while :
-      fprintf(stdout, "\tWHILE_%d_BEGIN:\n", id_label);
+      fprintf(output_file, "\tWHILE_%d_BEGIN:\n", id_label);
       mips_generate(create_quad(NULL, OP_BOOL_INF,$2.variable,$5, NULL));
       $$.listquad = create_quad(NULL, OP_LOOP_FOR, $2.variable, NULL,NULL);
     }
     ;
     M_WHILE:
     {
-      fprintf(stdout, "\tWHILE_%d_BEGIN:\n", id_label);
+      fprintf(output_file, "\tWHILE_%d_BEGIN:\n", id_label);
     };
     M_BOOL:
     {
-      fprintf(stdout, "\tj IF_%d_END\n", id_label-1);
-      fprintf(stdout, "\t#FALSE LIST\n");
-      fprintf(stdout, "\tIF_%d_FALSELIST:\n", id_label-1);
+      fprintf(output_file, "\tj IF_%d_END\n", id_label-1);
+      fprintf(output_file, "\t#FALSE LIST\n");
+      fprintf(output_file, "\tIF_%d_FALSELIST:\n", id_label-1);
     };
     AFFEC:
     '$' ID AFFECTATION EXPRESSION '$'
@@ -414,11 +414,11 @@ algorithm:
     INPUT OUTPUT GLOBAL LOCAL
     {
       printf("\n");
-      fprintf(stdout, "\t# Initialisation a 0 des variables\n");
+      fprintf(output_file, "\t# Initialisation a 0 des variables\n");
       for(int i = 0; i < symbol_table->length && symbol_table->symbol[i]->name != NULL; i++)
       {
-        fprintf(stdout, "\tli $t0,0\n");
-        fprintf(stdout, "\tsw $t0,%s\n", symbol_table->symbol[i]->name);
+        fprintf(output_file, "\tli $t0,0\n");
+        fprintf(output_file, "\tsw $t0,%s\n", symbol_table->symbol[i]->name);
       }
       printf("\n");
     }
@@ -500,14 +500,14 @@ int main(int argc, char* argv[]) {
   symbol_table->length = 0;
   memset(symbol_table->symbol, 0, sizeof symbol_table->symbol);
   all_quad = init_quad();
-  yyparse();
 
-  FILE * fp;
-	fp = fopen ("mips.s", "w+");
-	if (fp == NULL) {
-	  perror("mips.s");
-	  exit(EXIT_FAILURE);
-	}
+  output_file = fopen ("output_file.s", "w+");
+  if (output_file == NULL) {
+    perror("fopen output_file.s");
+    exit(EXIT_FAILURE);
+  }
+
+  yyparse();
 
   fclose(yyin);
 

@@ -6,7 +6,7 @@
 enum REGISTER_INT   { T0, T1, T2};
 enum REGISTER_FLOAT { F0, F1, F2};
 
-
+FILE *output_file;
 
 // affectation
 void gen_init_var(quad q);
