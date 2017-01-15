@@ -122,8 +122,7 @@ algorithm:
     CONDITION_FOR:
     '{' AFFEC KWTO '$' NUMBER '$' '}'
     {
-      // on converti  le for en while :
-
+      // on converti le for en while :
       fprintf(stdout, "\tWHILE_%d_BEGIN:\n", id_label);
       mips_generate(create_quad(NULL, OP_BOOL_INF,$2.variable,$5, NULL));
       $$.listquad = create_quad(NULL, OP_LOOP_FOR, $2.variable, NULL,NULL);
@@ -142,6 +141,7 @@ algorithm:
     AFFEC:
     '$' ID AFFECTATION EXPRESSION '$'
     {
+      $2 = strcat(strdup("var_"), $2);
       symbol s = search($2, symbol_table);
       if(s != NULL )
       {
@@ -176,7 +176,7 @@ algorithm:
       }
       else
       {
-        fprintf(stderr, "Erreur de typage ligne : %d %s n'est pas de type int!\n",yylineno, $7.variable->name);
+        fprintf(stderr, "Erreur de typage ligne : %d le parametre n'est pas de type int!\n",yylineno);
         exit(3);
       }
     }
@@ -185,13 +185,14 @@ algorithm:
     {
       if($7.variable->type == REAL_TYPE)
       {
-        mips_generate($7.listquad);
-        quad q = create_quad(NULL, PRINT_REAL, NULL, NULL, $7.variable);
-        mips_generate(q);
+          mips_generate($7.listquad);
+          quad q = create_quad(NULL, PRINT_REAL, NULL, NULL, $7.variable);
+          mips_generate(q);
+
       }
       else
       {
-        fprintf(stderr, "Erreur de typage ligne : %d %s n'est pas de type real!\n",yylineno, $7.variable->name);
+        fprintf(stderr, "Erreur de typage ligne : %d le parametre n'est pas de type real!\n",yylineno);
         exit(3);
       }
     }
@@ -216,7 +217,7 @@ algorithm:
       }
       else
       {
-        fprintf(stderr, "Erreur de typage ligne : %d %s n'est pas de type string!\n",yylineno, $7->name);
+        fprintf(stderr, "Erreur de typage ligne : %d le parametre n'est pas de type string!\n",yylineno);
         exit(3);
       }
     }
@@ -317,17 +318,20 @@ algorithm:
     NUMBER
     { // ajout dans la table des symboles;
       $1->isconst = TRUE;
+      $1->name = strcat(strdup("var_"), $1->name);
       $$.variable = add_to_symbol_array($1, symbol_table);
     }
     |
     REAL
     {
       $1->isconst = TRUE;
+      $1->name = strcat(strdup("var_"), $1->name);
       $$.variable = add_to_symbol_array($1, symbol_table);
     }
     |
     ID
     {
+      $1 = strcat(strdup("var_"), $1);
       symbol s = search($1, symbol_table);
       if(s == NULL)
       {
@@ -335,6 +339,25 @@ algorithm:
         exit(3);
       }
       s->address = NULL;
+      $$.variable = s;
+    }
+    |
+    ID '_' '{' NUMBER '}'
+    {
+      $1 = strcat(strdup("var_"), $1);
+      symbol s = search($1, symbol_table);
+      if(s == NULL)
+      {
+        fprintf(stderr, "Erreur ligne : %d la variable %s n'est pas declare !\n",yylineno, $1);
+        exit(3);
+      }
+      else if(s->unit != VECTOR)
+      {
+          fprintf(stderr, "Erreur ligne : %d la variable %s n'est pas un tableau !\n",yylineno, $1);
+          exit(3);
+      }
+      s->address = NULL;
+      s->vector.array.index = $4->value.int_value;
       $$.variable = s;
     }
 
@@ -424,7 +447,7 @@ algorithm:
     ;
 
   VARIABLE:
-    ID IN_KEY TYPE_KEY { $$->name = strdup($1);
+    ID IN_KEY TYPE_KEY { $$->name = strcat(strdup("var_"),strdup($1));
                          $$->type = $3;
                          // on ajoute l'element dans la table des symboles s'il n'est pas existant
                          symbol s = search($$->name, symbol_table);
@@ -441,10 +464,10 @@ algorithm:
                        }
     |
     ID IN_KEY TYPE_KEY '^' '{' NUMBER '}' {
-                         $$->name = strdup($1);
+                         $$->name = strcat(strdup("var_"),strdup($1));
                          $$->type = $3;
                          $$->unit = VECTOR;
-                         $$->vector.size = $6->value.int_value;
+                         $$->vector.array.size = $6->value.int_value;
                          // on ajoute l'element dans la table des symboles s'il n'est pas existant
                          symbol s = search($$->name, symbol_table);
                          if(s == NULL)

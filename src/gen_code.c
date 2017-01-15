@@ -422,7 +422,15 @@ void gen_syscall_print_int(quad q)
 {
 	fprintf(stdout, "\t# print_int\n");
 	fprintf(stdout, "\tli $v0,1\n");
-	gen_affect_var(strdup("$a0"), q->res);
+	if(q->res->unit == VECTOR)
+	{
+		fprintf(stdout, "\tla $a0,%s\n", q->res->name);
+		fprintf(stdout, "\tli $t0,%d\n", q->res->vector.array.index);
+		fprintf(stdout, "\tmul $t0,$t0,4\n");
+		fprintf(stdout, "\tadd $a0,$a0,$t0\n");
+		fprintf(stdout, "\tlw $a0,0($a0)\n");
+	}
+
 	fprintf(stdout, "\tsyscall\n\n");
 
 }
@@ -439,7 +447,14 @@ void gen_syscall_print_real(quad q)
 {
 	fprintf(stdout, "\t# print_float\n");
 	fprintf(stdout, "\tli $v0,2\n");
-	gen_affect_var(strdup("$f12"), q->res);
+	if(q->res->unit == VECTOR)
+	{
+		// on recupere le bon index
+		gen_affect_var(strdup("$f0"), q->res);
+		fprintf(stdout, "\tli.s $f1,8.0\n");
+		fprintf(stdout, "\tmul.s $f0,$f0,$f1\n");
+	}
+	//gen_affect_var(strdup("$f12"), q->res);
 	fprintf(stdout, "\tsyscall\n\n");
 }
 
@@ -543,9 +558,11 @@ void gen_init_var_array(quad q)
 			default:
 				break;
 		}
-		for(int i = 0; i < q->res->vector.size; i++)
+		for(int i = 0; i < q->res->vector.array.size; i++)
 		{
-			fprintf(stdout, "%s,", value);
+			fprintf(stdout, "%s", value);
+			if(i+1 < q->res->vector.array.size)
+				fprintf(stdout, ",");
 		}
 		fprintf(stdout, "\n");
 
