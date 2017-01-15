@@ -5,9 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 #define LENGTH_SYMBOL_ARRAY 128
+#define LENGTH_MAX_STRING 4
 
 enum BOOLEAN{FALSE, TRUE};
-enum TYPE {INT_TYPE, REAL_TYPE, CST_TYPE};
+enum TYPE {INT_TYPE, REAL_TYPE, CST_TYPE,BOOL_TYPE,TEXT_TYPE};
 enum SCOPE {SCOPE_INPUT, SCOPE_OUTPUT, SCOPE_GLOBAL, SCOPE_LOCAL};
 enum UNIT {SCALAR, VECTOR};
 
@@ -22,8 +23,11 @@ typedef struct symbol{
 		int int_value;
 		float float_value;
 		enum BOOLEAN bool_value;
+		char *string_value;
 	}value;
-
+	union{
+		int size;
+	}vector;
 	enum TYPE type;
 	enum SCOPE scope;
 	enum UNIT unit;
@@ -52,6 +56,10 @@ symbol search(char* name, symbol_array arraySymbol);
  @return : le symbole ajouté
 **/
 symbol add_to_symbol_array(symbol s, symbol_array arraySymbol);
+
+// recupere le symbol pour un string
+symbol search_string(char* name, symbol_array arraySymbol);
+
 void print_symbol_table(symbol_array symbol_table, char* name);
 void free_symbol_array(symbol_array arraySymbol);
 

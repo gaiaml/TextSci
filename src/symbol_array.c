@@ -24,6 +24,23 @@ symbol search(char* name, symbol_array symbol_table)
 	}
 	return result;
 }
+symbol search_string(char* name, symbol_array symbol_table)
+{
+	int found = 0;
+	symbol result = NULL;
+	for(int i = 0; i < symbol_table->length && !found; i++)
+	{
+		if(symbol_table->symbol[i]->type == TEXT_TYPE)
+		{
+			if(strcmp(name, symbol_table->symbol[i]->value.string_value) == 0)
+			{
+				found = 1;
+				result = symbol_table->symbol[i];
+			}
+		}
+	}
+	return result;
+}
 
 symbol add_to_symbol_array(symbol s, symbol_array arraySymbol)
 {
