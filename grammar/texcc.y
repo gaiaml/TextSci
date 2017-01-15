@@ -82,17 +82,13 @@ algorithm:
     ;
 
   LIST_CODE:
-      LIST_CODE CODE
+      CODE LIST_CODE
       | CODE
+      ;
   CODE:
     {}
     |
     AFFEC
-    |
-    EXPRESSION
-    {
-
-    }
     |
     FUNCTION
     |
