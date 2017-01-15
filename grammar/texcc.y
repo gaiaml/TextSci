@@ -55,8 +55,8 @@
 %type <variable> VARIABLE LIST_VARS
 %type <code> EXPRESSION BOOL_EXPR IF EIF LIST_CODE CODE FUNCTION AFFEC CONDITION_FOR
 
-%right '=' AFFECTATION
-%left '<' '>' INF_EQUAL SUP_EQUAL
+%right AFFECTATION
+%left '='  '<' '>' INF_EQUAL SUP_EQUAL
 %left '+' '-'
 %left '*' '/'
 
@@ -69,7 +69,7 @@ algorithm_list:
   ;
 
 algorithm:
-    TEXSCI_BEGIN '{' ID '}' DECLARATIONS BLANKLINE LIST_CODE TEXSCI_END
+    TEXSCI_BEGIN '{' ID '}' DECLARATIONS BLANKLINE INSTR TEXSCI_END
     {
       fprintf(stdout, ".data\n");
       mips_generate_symbol(symbol_table);
@@ -80,14 +80,16 @@ algorithm:
       free($3);
     }
     ;
-
+  INSTR:
+    {}
+    |
+    LIST_CODE
+    ;
   LIST_CODE:
       CODE LIST_CODE
       | CODE
       ;
   CODE:
-    {}
-    |
     AFFEC
     |
     FUNCTION
@@ -111,10 +113,6 @@ algorithm:
     |
     FOR CONDITION_FOR '{' LIST_CODE '}'
     {
-      //lw $t0,i
-      //add $t0,$t0,1
-      //sw $t0,i
-
       // incremente le compteur
       mips_generate($2.listquad);
       fprintf(stdout, "\tj WHILE_%d_BEGIN\n", $2.listquad->label_id);
