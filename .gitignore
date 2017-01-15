@@ -2,3 +2,6 @@ bin/
 bin/*
 *.o
 y.tab.*
+test.s
+output_file.s
+lex.yy.c
